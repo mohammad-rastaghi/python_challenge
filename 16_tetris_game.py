@@ -209,13 +209,14 @@ def draw_grid(surface, row, column):
             pygame.draw.line(surface, (128, 128, 128), (top_left_x + j*block_size, top_left_y), (top_left_x + j*block_size, top_left_y + play_height))   
 
 
-def clear_rows(grid, locked):
+def clear_rows(grid, locked, score):
     inc = 0
     for i in range(len(grid)-1, -1, -1):
         row = grid[i]
         if (0, 0, 0) not in row:
             inc += 1
             ind = i
+            score += 1
             for j in range(len(row)):
                 try:
                     del locked[(j, i)]
@@ -228,6 +229,7 @@ def clear_rows(grid, locked):
             if y < ind:
                 new_key = (x, y+inc)
                 locked[new_key] = locked.pop(key)
+    return score
 
 
 def draw_next_shape(object, surface):
@@ -267,6 +269,19 @@ def draw_window(surface):
     pygame.draw.rect(surface, (255, 0, 0), (top_left_x, top_left_y, play_width, play_height), 5)
 
 
+def draw_score(surface, score):
+    sx = 80
+    sy = top_left_y + play_height/2 - 40
+
+    font = pygame.font.SysFont('comicsans', 30)
+    label = font.render('Score:', 1, (255, 255, 255))
+    Score = font.render(str(score), 1, (255, 255, 255))
+
+    surface.blit(label, (sx, sy))
+    surface.blit(Score, (sx, sy + 30))
+      
+      
+      
 def main():
     global grid
 
@@ -279,6 +294,7 @@ def main():
     next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
+    score = 0
 
     while run:
         fall_speed = 0.27
@@ -341,10 +357,11 @@ def main():
             next_piece = get_shape()
             change_piece = False
 
-            clear_rows(grid, locked_positions)
+            score = clear_rows(grid, locked_positions, score)
         
         draw_window(win)
         draw_next_shape(next_piece, win)
+        draw_score(win, score)
         pygame.display.update()
 
         # check if user lost
